@@ -7,7 +7,6 @@
   packages = with pkgs; [ 
     clang clang-tools bear
     gdb
-    raylib
     lolcat boxes
   ];
 
@@ -18,12 +17,12 @@
           mkdir out
         fi
       '';
-      before = [ "ray:build-commands" ];
+      before = [ "dev:build-commands" ];
     };
-    "ray:build-commands" = {
+    "dev:build-commands" = {
       exec = ''
         if [[ ! -f compile_commands.json ]]; then
-          ray-build-commands
+          dev-build-commands
         fi
       '';
       before = [ "devenv:enterShell" ];
@@ -31,22 +30,20 @@
   };
 
   scripts = {
-    ray-build-commands.exec = ''
+    dev-build-commands.exec = ''
       cd ${config.env.DEVENV_ROOT};
-      bear -- ray-build
+      bear -- dev-build
     '';
-    ray-build.exec = ''
+    dev-build.exec = ''
       cd ${config.env.DEVENV_ROOT};
       clang \
         -Wall -Wextra -std=c99 \
-        -I${pkgs.raylib}/include \
         -I${pkgs.clang}/resource-root/include \
-        -L${pkgs.raylib}/lib -lraylib \
         -framework CoreVideo -framework IOKit -framework Cocoa -framework GLUT -framework OpenGL \
         -o ${config.env.BUILD_OUTFILE} ${config.env.BUILD_INFILE}
     '';
-    ray-run.exec = ''
-      ray-build && ${config.env.DEVENV_ROOT}/${config.env.BUILD_OUTFILE}
+    dev-run.exec = ''
+      dev-build && ${config.env.DEVENV_ROOT}/${config.env.BUILD_OUTFILE}
     '';
   };
 
@@ -55,9 +52,9 @@
       Dev Environment loaded!
       
       Available commands:
-        - ray-build           : Build the program
-        - ray-run             : Build and run the program
-        - ray-build-commands  : Generate compile_commands.json for clang tooling
+        - dev-build           : Build the program
+        - dev-run             : Build and run the program
+        - dev-build-commands  : Generate compile_commands.json for clang tooling
     EOF
   '';
 }
