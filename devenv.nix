@@ -1,8 +1,8 @@
 { pkgs,  config, ... }:
 {
-  env.GREET = "devenv";
-  env.BUILD_OUTFILE = "out/main";
-  env.BUILD_INFILE = "main.c";
+  env.BUILD_OUTDIR = "out/";
+  env.BUILD_DEFAULT_FILE = "main.c";
+  env.MallocNanoZone = "0"; # prevent ASan issues on macOS
 
   packages = with pkgs; [ 
     clang clang-tools bear
@@ -32,18 +32,26 @@
   scripts = {
     dev-build-commands.exec = ''
       cd ${config.env.DEVENV_ROOT};
+      input="''${1:-${config.env.BUILD_DEFAULT_FILE}}";
+
       bear -- dev-build
     '';
     dev-build.exec = ''
       cd ${config.env.DEVENV_ROOT};
+      input="''${1:-${config.env.BUILD_DEFAULT_FILE}}";
+      output="${config.env.BUILD_OUTDIR}/$(basename $input .c)";
+
       clang \
-        -Wall -Wextra -std=c99 \
+        -Wall -Wextra -Werror -std=c99 -fsanitize=address \
         -I${pkgs.clang}/resource-root/include \
-        -framework CoreVideo -framework IOKit -framework Cocoa -framework GLUT -framework OpenGL \
-        -o ${config.env.BUILD_OUTFILE} ${config.env.BUILD_INFILE}
+        -o "$output" "$input"
     '';
     dev-run.exec = ''
-      dev-build && ${config.env.DEVENV_ROOT}/${config.env.BUILD_OUTFILE}
+      cd ${config.env.DEVENV_ROOT}
+      input="''${1:-${config.env.BUILD_DEFAULT_FILE}}";
+      output="${config.env.BUILD_OUTDIR}/$(basename $input .c)";
+
+      dev-build "$input" && "$output"
     '';
   };
 
@@ -52,9 +60,9 @@
       Dev Environment loaded!
       
       Available commands:
-        - dev-build           : Build the program
-        - dev-run             : Build and run the program
-        - dev-build-commands  : Generate compile_commands.json for clang tooling
+        - dev-build [filename]  : build the program (defaults to main.c)
+        - dev-run [filename]    : build and run the program (defaults to main.c)
+        - dev-build-commands    : generate compile_commands.json for clang tooling
     EOF
   '';
 }
