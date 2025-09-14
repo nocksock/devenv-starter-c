@@ -15,7 +15,7 @@ Devenv will handle everything else.
 
 - `just run [path/to/file.c]`: build and run, defaults to `src/main.c`
 - `just build [path/to/file.c]`: build, defaults to `src/main.c`
-- `just test [filter]`: builds and runs all files in `test/`, filter defaults to `.` and can take any filter that `fd` understands, eg.: `just test options`
+- `just test [filter]`: builds and runs all files in `test/`, filter defaults to `.` and can take any filter that `fd` understands, eg.: `just test example`
 
 They work in any directory within the devenv shell.
 

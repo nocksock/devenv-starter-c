@@ -10,5 +10,5 @@ devenv.local.nix
 
 # build artifacts
 .cache
-out
+build
 compile_commands.json
