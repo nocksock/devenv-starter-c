@@ -1,6 +1,8 @@
 # Devenv Starter for developing C
 
-Currently only test for macOS.
+A simple setup to comfortably write small programs in c.
+
+Currently only tested on macOS.
 
 ## Dependencies
 
@@ -11,15 +13,16 @@ Devenv will handle everything else.
 
 ## Commands
 
-- `dev-build`: build 
-- `dev-run`: build and run
+- `just run [path/to/file.c]`: build and run, defaults to `src/main.c`
+- `just build [path/to/file.c]`: build, defaults to `src/main.c`
+- `just test [filter]`: builds and runs all files in `test/`, filter defaults to `.` and can take any filter that `fd` understands, eg.: `just test options`
 
 They work in any directory within the devenv shell.
 
 ## Using neovim 
 
 tip: If you started `nvim` from within the devenv shell, then you can quickly
-build and run using `:!dev-run`.
+build and run anything via `:!`, eg to run a test `:!just run`.
 
 ### LSP Config
 

@@ -1,58 +1,29 @@
 { pkgs,  config, ... }:
 {
-  env.BUILD_OUTDIR = "out/";
-  env.BUILD_DEFAULT_FILE = "main.c";
-  env.MallocNanoZone = "0"; # prevent ASan issues on macOS
+  env.CLANG_RESOURCE_DIR = "${pkgs.clang}/resource-root/include";
+  env.MallocNanoZone = "0"; # prevent print of odd ASan issue on macOS
 
   packages = with pkgs; [ 
+    # app dependencies
+    git
+
+    # dev tools
     clang clang-tools bear
     gdb
-    lolcat boxes
+    just fd lolcat boxes
   ];
 
+  enterTest = ''
+    just test
+  '';
+
   tasks = {
-    "init:create-out" = {
-      exec = ''
-        if [[ ! -d out ]]; then
-          mkdir out
-        fi
-      '';
-      before = [ "dev:build-commands" ];
-    };
     "dev:build-commands" = {
       exec = ''
-        if [[ ! -f compile_commands.json ]]; then
-          dev-build-commands
-        fi
+        just build-commands
       '';
       before = [ "devenv:enterShell" ];
     };
-  };
-
-  scripts = {
-    dev-build-commands.exec = ''
-      cd ${config.env.DEVENV_ROOT};
-      input="''${1:-${config.env.BUILD_DEFAULT_FILE}}";
-
-      bear -- dev-build
-    '';
-    dev-build.exec = ''
-      cd ${config.env.DEVENV_ROOT};
-      input="''${1:-${config.env.BUILD_DEFAULT_FILE}}";
-      output="${config.env.BUILD_OUTDIR}/$(basename $input .c)";
-
-      clang \
-        -Wall -Wextra -Werror -std=c99 -fsanitize=address \
-        -I${pkgs.clang}/resource-root/include \
-        -o "$output" "$input"
-    '';
-    dev-run.exec = ''
-      cd ${config.env.DEVENV_ROOT}
-      input="''${1:-${config.env.BUILD_DEFAULT_FILE}}";
-      output="${config.env.BUILD_OUTDIR}/$(basename $input .c)";
-
-      dev-build "$input" && "$output"
-    '';
   };
 
   enterShell = ''
@@ -60,9 +31,15 @@
       Dev Environment loaded!
       
       Available commands:
-        - dev-build [filename]  : build the program (defaults to main.c)
-        - dev-run [filename]    : build and run the program (defaults to main.c)
-        - dev-build-commands    : generate compile_commands.json for clang tooling
+        - just run       # build and run src/main.c
+        - just build     # Build the application
+        - just test      # Build and run tests
+
+      all commands take a file argument to specify a different source file
+
+      EXAMPLE:
+        just run src/main.c
+        just test test/options_test.c
     EOF
   '';
 }
