@@ -70,3 +70,7 @@ _get-output input="src/main.c":
   else
     echo "{{build_dir}}$(basename {{input}} .c)"
   fi
+
+
+watch *args:
+  fd | entr -rc just $@
